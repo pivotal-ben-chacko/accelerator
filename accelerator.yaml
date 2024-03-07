@@ -12,14 +12,11 @@ accelerator:
       label: Notification E-mail
       required: true
 engine:
-  let:
-    - name: email-id
-      expression: '#emailID.toLowerCase()'
   chain:
     - applyTo: [ "pipelineTemplate.yaml" ]
       chain:
         - type: ReplaceText
           substitutions:
             - text: "EMAIL-ID"
-              with: "#email-id"
+              with: "#emailID"
 
