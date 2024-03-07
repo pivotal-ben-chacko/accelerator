@@ -86,10 +86,10 @@ template:
                     name: e-mail
                     identifier: email
                     spec:
-                      to: 
+                      to: EMAIL-ID
                       cc: ""
                       subject: Deployment success
-                      body: test
+                      body: Deployment to Skynet Cluster was a success!
                     timeout: 10m
                     when:
                       stageStatus: Success
