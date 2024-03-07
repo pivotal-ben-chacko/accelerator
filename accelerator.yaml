@@ -5,9 +5,21 @@ accelerator:
   tags:
   - harness
   - skynet
+  options:
+    - name: emailID
+      inputType: text
+      defaultValue: ""
+      label: Notification E-mail
+      required: true
 engine:
-  applyTo: [ "**/pipelineTemplate.yaml" ]
-  type: ReplaceText
-  substitutions:
-  - text: EMAIL-ID
-    with: "#artifactId"
+  let:
+    - name: email-id
+      expression: '#emailID.toLowerCase()'
+  chain:
+    - applyTo: [ "pipelineTemplate.yaml" ]
+      chain:
+        - type: ReplaceText
+          substitutions:
+            - text: "EMAIL-ID"
+              with: "#email-id"
+
