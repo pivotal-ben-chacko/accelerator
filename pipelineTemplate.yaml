@@ -1,0 +1,98 @@
+template:
+  name: guestbook-canary-pipeline-template
+  type: Pipeline
+  projectIdentifier: default_project
+  orgIdentifier: default
+  spec:
+    stages:
+      - stage:
+          description: ""
+          failureStrategies:
+            - onFailure:
+                action:
+                  type: StageRollback
+                errors:
+                  - AllErrors
+          identifier: deployguestbook
+          name: deploy-guestbook
+          spec:
+            deploymentType: Kubernetes
+            environment:
+              deployToAll: false
+              environmentRef: harnessdevenv
+              infrastructureDefinitions:
+                - identifier: harnessk8sinfra
+            execution:
+              rollbackSteps:
+                - step:
+                    identifier: rollbackCanaryDelete
+                    name: Canary Delete
+                    spec: {}
+                    timeout: 10m
+                    type: K8sCanaryDelete
+                - step:
+                    identifier: rollingRollback
+                    name: Rolling Rollback
+                    spec: {}
+                    timeout: 10m
+                    type: K8sRollingRollback
+              steps:
+                - stepGroup:
+                    identifier: canaryDepoyment
+                    name: Canary Deployment
+                    steps:
+                      - step:
+                          identifier: canaryDeployment
+                          name: Canary Deployment
+                          spec:
+                            instanceSelection:
+                              spec:
+                                count: 1
+                              type: Count
+                            skipDryRun: false
+                          timeout: 10m
+                          type: K8sCanaryDeploy
+                      - step:
+                          identifier: canaryDelete
+                          name: Canary Delete
+                          spec: {}
+                          timeout: 10m
+                          type: K8sCanaryDelete
+                - stepGroup:
+                    identifier: primaryDepoyment
+                    name: Primary Deployment
+                    steps:
+                      - step:
+                          identifier: rollingDeployment
+                          name: Rolling Deployment
+                          spec:
+                            skipDryRun: false
+                          timeout: 10m
+                          type: K8sRollingDeploy
+            service:
+              serviceRef: harnessguestbook
+          tags: {}
+          type: Deployment
+      - stage:
+          name: Notify
+          identifier: Notify
+          description: ""
+          type: Custom
+          spec:
+            execution:
+              steps:
+                - step:
+                    type: Email
+                    name: e-mail
+                    identifier: email
+                    spec:
+                      to: 
+                      cc: ""
+                      subject: Deployment success
+                      body: test
+                    timeout: 10m
+                    when:
+                      stageStatus: Success
+          tags: {}
+  identifier: guestbookcanarypipelinetemplate
+  versionLabel: v1
